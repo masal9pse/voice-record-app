@@ -8,23 +8,42 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController {
-
+class ViewController: UIViewController,AVAudioRecorderDelegate,AVAudioPlayerDelegate {
+    @IBOutlet weak var recordBTN: UIButton!
+    @IBOutlet weak var playBTN: UIButton!
+    var soundRecorder: AVAudioRecorder!
+    var soundPlayer: AVAudioPlayer!
+    var fileName = "audioFile.m4a"
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        // Request permission to record.
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            if granted {
-                // The user granted access. Present recording interface.
-            } else {
-                // Present message to user indicating that recording
-                // can't be performed until they change their preference
-                // under Settings -> Privacy -> Microphone
-            }
+    }
+    
+    @IBAction func recordAct(_ sender: Any) {}
+    @IBAction func playAct(_ sender: Any) {
+    }
+    
+    func getDocumentsDirector() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
+    }
+    
+    func setupRecoder() {
+        let audioFilename = getDocumentsDirector().appendingPathComponent(fileName)
+        let recordSetting = [ AVFormatIDKey: kAudioFormatAppleLossless
+                              ,AVEncoderAudioQualityKey: AVAudioQuality.max.rawValue,
+                        AVEncoderBitRateKey: 3200,
+                      AVNumberOfChannelsKey: 2,
+                            AVSampleRateKey: 44100.2
+        ] as [String: Any]
+        
+        do {
+            soundRecorder = try AVAudioRecorder(url: audioFilename, settings: recordSetting)
+//            soundRecorder.delegate = self
+//            soundRecorder.prepareToRecord()
+            soundRecorder.prepareToRecord()
+        }catch {
+            print(error)
         }
     }
-
-
 }
 
