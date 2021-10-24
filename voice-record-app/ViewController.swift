@@ -9,16 +9,14 @@ import UIKit
 import AVFoundation
 
 //class ViewController: UIViewController,AVAudioRecorderDelegate,AVAudioPlayerDelegate {
-class ViewController: UIViewController,AVAudioPlayerDelegate {
+//class ViewController: UIViewController,AVAudioPlayerDelegate {
+class ViewController: UIViewController {
     @IBOutlet weak var recordBTN: UIButton!
-    @IBOutlet weak var playBTN: UIButton!
     var soundRecorder: AVAudioRecorder!
-    var soundPlayer: AVAudioPlayer!
-    var fileName = "audioFile.m4a"
+    var fileName = "record.m4a"
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupRecoder()
-        playBTN.isEnabled = false
+//        setupRecoder()
     }
     
     func getDocumentsDirector() -> URL {
@@ -27,7 +25,15 @@ class ViewController: UIViewController,AVAudioPlayerDelegate {
     }
     
     func setupRecoder() {
-        let audioFilename = getDocumentsDirector().appendingPathComponent(fileName)
+        let dt = Date()
+        let dateFormatter = DateFormatter()
+
+        // DateFormatter を使用して書式とロケールを指定する
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yMdkHms", options: 0, locale: Locale(identifier: "ja_JP"))
+
+        print(dateFormatter.string(from: dt))
+        let jpDate = dateFormatter.string(from: dt)
+        let audioFilename = getDocumentsDirector().appendingPathComponent(jpDate + fileName)
         let recordSetting = [ AVFormatIDKey: kAudioFormatAppleLossless
                               ,AVEncoderAudioQualityKey: AVAudioQuality.max.rawValue,
                         AVEncoderBitRateKey: 3200,
@@ -37,66 +43,34 @@ class ViewController: UIViewController,AVAudioPlayerDelegate {
         
         do {
             soundRecorder = try AVAudioRecorder(url: audioFilename, settings: recordSetting)
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(AVAudioSessionCategoryRecord)
-            try session.setActive(true)
-//            soundRecorder.delegate = self
-//            soundRecorder.prepareToRecord()
+//            let session = AVAudioSession.sharedInstance()
+//            try session.setCategory(AVAudioSessionCategoryRecord)
+//            try session.setActive(true)
             soundRecorder.prepareToRecord()
-        }catch {
+        } catch {
             print(error)
         }
     }
     
-    // ２回目に再生すると音が聞こえなくなる。
-    func setupPlayer(){
-        let audioFilename = getDocumentsDirector().appendingPathComponent(fileName)
-        do{
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(AVAudioSessionCategoryAmbient)
-            soundPlayer = try AVAudioPlayer(contentsOf: audioFilename)
-            soundPlayer.delegate = self
-            soundPlayer.prepareToPlay()
-            soundPlayer.volume = 1.0
-        } catch {
-          print(error)
-        print(333)
-        }
-    }
     
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        playBTN.isEnabled = true
-    }
+//    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+//        playBTN.isEnabled = true
+//    }
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         recordBTN.isEnabled = true
-        playBTN.setTitle("play", for: .normal)
     }
     
     @IBAction func recordAct(_ sender: Any) {
         if recordBTN.titleLabel?.text == "Record" {
+            setupRecoder()
             soundRecorder.record()
             recordBTN.setTitle("Stop", for: .normal)
-            playBTN.isEnabled = false
         } else {
             soundRecorder.stop()
             let session = AVAudioSession.sharedInstance()
             try! session.setActive(false)
             recordBTN.setTitle("Record", for: .normal)
-            playBTN.isEnabled = true
-        }
-    }
-    
-    @IBAction func playAct(_ sender: Any) {
-        if playBTN.titleLabel?.text == "Play" {
-            playBTN.setTitle("Stop", for: .normal)
-            recordBTN.isEnabled = false
-            setupPlayer()
-            soundPlayer.play()
-        } else {
-            soundPlayer.stop()
-            playBTN.setTitle("Play", for: .normal)
-            recordBTN.isEnabled = false
         }
     }
 }
