@@ -37,6 +37,9 @@ class ViewController: UIViewController,AVAudioPlayerDelegate {
         
         do {
             soundRecorder = try AVAudioRecorder(url: audioFilename, settings: recordSetting)
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(AVAudioSessionCategoryRecord)
+            try session.setActive(true)
 //            soundRecorder.delegate = self
 //            soundRecorder.prepareToRecord()
             soundRecorder.prepareToRecord()
@@ -45,15 +48,19 @@ class ViewController: UIViewController,AVAudioPlayerDelegate {
         }
     }
     
+    // ２回目に再生すると音が聞こえなくなる。
     func setupPlayer(){
         let audioFilename = getDocumentsDirector().appendingPathComponent(fileName)
         do{
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(AVAudioSessionCategoryAmbient)
             soundPlayer = try AVAudioPlayer(contentsOf: audioFilename)
             soundPlayer.delegate = self
             soundPlayer.prepareToPlay()
             soundPlayer.volume = 1.0
         } catch {
           print(error)
+        print(333)
         }
     }
     
@@ -73,6 +80,8 @@ class ViewController: UIViewController,AVAudioPlayerDelegate {
             playBTN.isEnabled = false
         } else {
             soundRecorder.stop()
+            let session = AVAudioSession.sharedInstance()
+            try! session.setActive(false)
             recordBTN.setTitle("Record", for: .normal)
             playBTN.isEnabled = true
         }
